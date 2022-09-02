@@ -1,9 +1,12 @@
+from ast import Try
 import telebot
+import sqlite3
 import json
-
 import conf
 from telebot import types
 bot = telebot.TeleBot("5380424056:AAFRXRxshbyND6re666VyOk4VFAeWRaWWGQ")
+con = sqlite3.connect("gameinfo.db", check_same_thread=False)
+cur = con.cursor()
 
 keyboard = types.InlineKeyboardMarkup()
 url_button = types.InlineKeyboardButton(text="Приєднатися!", url='t.me/Memna_hata_bot?start='+str(conf.userClickID)) 
@@ -55,5 +58,22 @@ def iq_callback(query): #Ця хня по ідеї має хаписувати �
 @bot.message_handler(commands=['help']) #Полезний Хелп знаю)
 def send_welcome(message):
 	bot.reply_to(message, "help")
+
+@bot.message_handler(commands=['start'])
+def register(message):
+  user_username = str(message.chat.username) #Підтягую юзернейм 
+  user_id = str(message.chat.id) #Підтягую айді
+  check = cur.execute(f"SELECT id FROM player WHERE id = {user_id}") #Запрос ID
+  if check.fetchone() == None: #Якщо ID не знайшло
+    cur.execute(f"""
+        INSERT INTO player VALUES
+            ({user_id}, '{user_username}', 'false') 
+    """) #Записати
+    con.commit() 
+    bot.reply_to(message, f"Вітаємо в нашому боті, @{user_username}, будьмо знайомі") 
+  else: 
+    bot.reply_to(message, f"З поверненням, @{user_username}") 
+  res = cur.execute("SELECT * FROM player") #Вивід БД в консоль
+  print(res.fetchall())
 
 bot.infinity_polling()
