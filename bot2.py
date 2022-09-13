@@ -3,6 +3,7 @@ import telebot
 import sqlite3
 import json
 import conf
+import idbot
 from telebot import types
 bot = idbot.key
 con = sqlite3.connect("gameinfo.db", check_same_thread=False)
